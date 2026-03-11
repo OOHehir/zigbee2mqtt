@@ -1,0 +1,39 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Data (large, regenerated)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# zigbee2mqtt runtime state (generated on first run)
+z2m-local/
+config/zigbee2mqtt/coordinator_backup.json
+config/zigbee2mqtt/database.db
+config/zigbee2mqtt/state.json
+config/zigbee2mqtt/migration-*.log
+
+# Mosquitto runtime
+config/mosquitto/data/
+config/mosquitto/log/
+
+# Firmware binaries (large, downloaded)
+*.gbl
+
+# Docker volumes
+mosquitto_data/
+mosquitto_log/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
