@@ -130,6 +130,7 @@ Common ones:
 | Attribute | Typical sensors | Unit |
 |-----------|----------------|------|
 | `presence` | Rufilla presence node (binary → 0/1) | — |
+| `range_mm` | Rufilla presence node (VL53L0X ToF) | mm |
 | `sound_level` | ESP32-C6 custom | 0.0–1.0 |
 | `temperature` | Aqara, SONOFF SNZB-02 | °C |
 | `humidity` | Aqara, SONOFF SNZB-02 | % |
