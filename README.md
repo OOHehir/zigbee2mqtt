@@ -7,8 +7,9 @@ SQLite for later analysis with pandas / scikit-learn.
 ## Architecture
 
 ```
-ESP32-C6 (sound)  ─┐
-Aqara temp/hum     ─┤                  ┌─────────────┐     ┌───────────┐
+ESP32-C6 (presence)─┐
+ESP32-C6 (sound)   ─┤                  ┌─────────────┐     ┌───────────┐
+Aqara temp/hum     ─┤                  │             │     │           │
 PIR sensor         ─┼── Zigbee 802.15.4 ──▶│ zigbee2mqtt │──MQTT──▶│ collector │──▶ SQLite
 Vibration sensor   ─┤                  │  (coordinator)│     │  (Python) │     sensor_data.db
 Lux sensor         ─┘                  └─────────────┘     └───────────┘
@@ -21,6 +22,7 @@ Lux sensor         ─┘                  └───────────�
 | `docker-compose.yml` | Mosquitto MQTT broker + zigbee2mqtt |
 | `config/zigbee2mqtt/` | Coordinator config (SONOFF dongle on `/dev/ttyACM0`) |
 | `converters/sound_monitor.js` | Custom zigbee2mqtt converter for the ESP32-C6 sound sensor |
+| `converters/rufilla-presence-node.js` | Custom converter for the Rufilla presence sensor (LD2410C mmWave) |
 | `collector/collector.py` | MQTT subscriber — stores all numeric attributes to SQLite |
 | `collector/db.py` | SQLite schema (EAV) and helpers |
 | `collector/query_example.py` | Example: load data into pandas, pivot to wide format for ML |
@@ -127,6 +129,7 @@ Common ones:
 
 | Attribute | Typical sensors | Unit |
 |-----------|----------------|------|
+| `presence` | Rufilla presence node (binary → 0/1) | — |
 | `sound_level` | ESP32-C6 custom | 0.0–1.0 |
 | `temperature` | Aqara, SONOFF SNZB-02 | °C |
 | `humidity` | Aqara, SONOFF SNZB-02 | % |
@@ -160,4 +163,4 @@ Then restart: `docker compose restart zigbee2mqtt`
 
 - **Coordinator:** SONOFF Zigbee 3.0 USB Dongle Plus V2 (EFR32MG21, `/dev/ttyACM0`)
 - **Target platform:** Raspberry Pi 4
-- **Sensors:** Any Zigbee 3.0 device + custom ESP32-C6 sound monitor
+- **Sensors:** Any Zigbee 3.0 device + custom ESP32-C6 sound monitor + Rufilla presence node

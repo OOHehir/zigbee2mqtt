@@ -23,5 +23,6 @@ devices: {}
 
 external_converters:
   - converters/sound_monitor.js
+  - converters/rufilla-presence-node.js
 
 permit_join: true
