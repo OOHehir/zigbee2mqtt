@@ -18,8 +18,8 @@ const fz = {
 const definition = {
     zigbeeModel: ['presence-node-v1'],
     model: 'presence-node-v1',
-    vendor: 'Rufilla',
-    description: 'Rufilla Intelligence Node — mmWave presence + ToF ranging + static energy',
+    vendor: 'ElectronicsConsult',
+    description: 'ElectronicsConsult Presence Node — mmWave presence + ToF ranging + static energy',
     fromZigbee: [fz.analog_input],
     toZigbee: [],
     meta: {multiEndpoint: true},

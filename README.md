@@ -22,7 +22,7 @@ Arista Vibration      ─┤                  │  (coordinator)│     │  (Py
 | `docker-compose.yml` | Mosquitto MQTT broker + zigbee2mqtt |
 | `config/zigbee2mqtt/` | Coordinator config (SONOFF dongle on `/dev/ttyACM0`) |
 | `converters/sound_monitor.js` | Custom zigbee2mqtt converter for the ESP32-C6 sound sensor |
-| `converters/rufilla-presence-node.js` | Custom converter for the Rufilla presence sensor (LD2410C mmWave) |
+| `converters/presence-node.js` | Custom converter for the ElectronicsConsult presence sensor (LD2410C mmWave) |
 | `converters/arista-multifunction.js` | Custom converter for Arista sensors (ARST-MS, ARST-TH, ARST-VB) |
 | `collector/collector.py` | MQTT subscriber — stores all numeric attributes to SQLite |
 | `collector/db.py` | SQLite schema (EAV) and helpers |
@@ -49,7 +49,7 @@ auto-discover standard ZCL clusters (temperature, humidity, occupancy, illuminan
 Custom external converters handle non-standard devices:
 
 - **ESP32-C6 sound monitor** (`converters/sound_monitor.js`) — maps Analog Input `present_value` to `sound_level`
-- **Rufilla presence node** (`converters/rufilla-presence-node.js`) — maps mmWave presence + ToF range
+- **ElectronicsConsult presence node** (`converters/presence-node.js`) — maps mmWave presence + ToF range
 - **Arista multifunction sensors** (`converters/arista-multifunction.js`) — handles all three Arista models:
   - **ARST-MS** (Multifunction): PIR occupancy, reed switch contact, temperature, illuminance
   - **ARST-TH** (Temp & Humidity): temperature, humidity (SHTC3)
@@ -135,8 +135,8 @@ Common ones:
 
 | Attribute | Typical sensors | Unit |
 |-----------|----------------|------|
-| `presence` | Rufilla presence node (binary → 0/1) | — |
-| `range_cm` | Rufilla presence node (VL53L0X ToF) | cm |
+| `presence` | ElectronicsConsult presence node (binary → 0/1) | — |
+| `range_cm` | ElectronicsConsult presence node (VL53L0X ToF) | cm |
 | `sound_level` | ESP32-C6 sound monitor | 0.0–1.0 |
 | `temperature` | Arista ARST-MS/TH/VB, other ZCL devices | °C |
 | `humidity` | Arista ARST-TH, other ZCL devices | % |
@@ -253,4 +253,4 @@ docker compose logs -f       # tail all logs
 
 - **Coordinator:** SONOFF Zigbee 3.0 USB Dongle Plus V2 (EFR32MG21, `/dev/ttyACM0`)
 - **Target platform:** Raspberry Pi 4
-- **Sensors:** Arista multifunction (ARST-MS, ARST-TH, ARST-VB) + ESP32-C6 sound monitor + Rufilla presence node + any Zigbee 3.0 device
+- **Sensors:** Arista multifunction (ARST-MS, ARST-TH, ARST-VB) + ESP32-C6 sound monitor + ElectronicsConsult presence node + any Zigbee 3.0 device
