@@ -7,12 +7,12 @@ SQLite for later analysis with pandas / scikit-learn.
 ## Architecture
 
 ```
-ESP32-C6 (presence)─┐
-ESP32-C6 (sound)   ─┤                  ┌─────────────┐     ┌───────────┐
-Aqara temp/hum     ─┤                  │             │     │           │
-PIR sensor         ─┼── Zigbee 802.15.4 ──▶│ zigbee2mqtt │──MQTT──▶│ collector │──▶ SQLite
-Vibration sensor   ─┤                  │  (coordinator)│     │  (Python) │     sensor_data.db
-Lux sensor         ─┘                  └─────────────┘     └───────────┘
+ESP32-C6 (presence)────┐
+ESP32-C6 (sound)      ─┤                  ┌─────────────┐     ┌───────────┐
+Arista Multifunction  ─┤                  │             │     │           │
+Arista Temp & Humidity─┼── Zigbee 802.15.4 ──▶│ zigbee2mqtt │──MQTT──▶│ collector │──▶ SQLite
+Arista Vibration      ─┤                  │  (coordinator)│     │  (Python) │     sensor_data.db
+(other Zigbee 3.0)    ─┘                  └─────────────┘     └───────────┘
 ```
 
 ## Components
@@ -23,6 +23,7 @@ Lux sensor         ─┘                  └───────────�
 | `config/zigbee2mqtt/` | Coordinator config (SONOFF dongle on `/dev/ttyACM0`) |
 | `converters/sound_monitor.js` | Custom zigbee2mqtt converter for the ESP32-C6 sound sensor |
 | `converters/rufilla-presence-node.js` | Custom converter for the Rufilla presence sensor (LD2410C mmWave) |
+| `converters/arista-multifunction.js` | Custom converter for Arista sensors (ARST-MS, ARST-TH, ARST-VB) |
 | `collector/collector.py` | MQTT subscriber — stores all numeric attributes to SQLite |
 | `collector/db.py` | SQLite schema (EAV) and helpers |
 | `collector/query_example.py` | Example: load data into pandas, pivot to wide format for ML |
@@ -45,9 +46,14 @@ Open http://localhost:8080 — permit_join is enabled by default.
 Put each sensor into pairing mode per its manual.  zigbee2mqtt will
 auto-discover standard ZCL clusters (temperature, humidity, occupancy, illuminance, etc.).
 
-For the custom ESP32-C6 sound monitor, the external converter
-(`converters/sound_monitor.js`) maps the Analog Input `present_value` to a
-`sound_level` attribute.
+Custom external converters handle non-standard devices:
+
+- **ESP32-C6 sound monitor** (`converters/sound_monitor.js`) — maps Analog Input `present_value` to `sound_level`
+- **Rufilla presence node** (`converters/rufilla-presence-node.js`) — maps mmWave presence + ToF range
+- **Arista multifunction sensors** (`converters/arista-multifunction.js`) — handles all three Arista models:
+  - **ARST-MS** (Multifunction): PIR occupancy, reed switch contact, temperature, illuminance
+  - **ARST-TH** (Temp & Humidity): temperature, humidity (SHTC3)
+  - **ARST-VB** (Vibration): vibration detection (LSM6DSL), temperature
 
 ### 3. Start the data collector
 
@@ -131,14 +137,15 @@ Common ones:
 |-----------|----------------|------|
 | `presence` | Rufilla presence node (binary → 0/1) | — |
 | `range_cm` | Rufilla presence node (VL53L0X ToF) | cm |
-| `sound_level` | ESP32-C6 custom | 0.0–1.0 |
-| `temperature` | Aqara, SONOFF SNZB-02 | °C |
-| `humidity` | Aqara, SONOFF SNZB-02 | % |
-| `occupancy` | PIR sensors (binary → 0/1) | — |
-| `illuminance` / `illuminance_lux` | Light sensors | lux |
-| `vibration` | Aqara vibration (binary → 0/1) | — |
-| `angle_x`, `angle_y`, `angle_z` | Aqara vibration | degrees |
-| `battery` | All battery devices | % |
+| `sound_level` | ESP32-C6 sound monitor | 0.0–1.0 |
+| `temperature` | Arista ARST-MS/TH/VB, other ZCL devices | °C |
+| `humidity` | Arista ARST-TH, other ZCL devices | % |
+| `occupancy` | Arista ARST-MS (PIR), other PIR sensors (binary → 0/1) | — |
+| `contact` | Arista ARST-MS (reed switch, binary → 0/1) | — |
+| `illuminance` / `illuminance_lux` | Arista ARST-MS (APDS-9922), other light sensors | lux |
+| `vibration` | Arista ARST-VB (LSM6DSL, binary → 0/1) | — |
+| `battery` | All battery devices (Arista, etc.) | % |
+| `battery_voltage` | All battery devices | V |
 | `linkquality` | All devices | LQI |
 
 ## Configuration
@@ -164,4 +171,4 @@ Then restart: `docker compose restart zigbee2mqtt`
 
 - **Coordinator:** SONOFF Zigbee 3.0 USB Dongle Plus V2 (EFR32MG21, `/dev/ttyACM0`)
 - **Target platform:** Raspberry Pi 4
-- **Sensors:** Any Zigbee 3.0 device + custom ESP32-C6 sound monitor + Rufilla presence node
+- **Sensors:** Arista multifunction (ARST-MS, ARST-TH, ARST-VB) + ESP32-C6 sound monitor + Rufilla presence node + any Zigbee 3.0 device

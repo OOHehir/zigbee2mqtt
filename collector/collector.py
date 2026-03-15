@@ -46,6 +46,7 @@ SKIP_ATTRIBUTES = {
 BINARY_ATTRIBUTES = {
     "occupancy", "contact", "vibration", "tamper",
     "battery_low", "water_leak", "smoke", "gas",
+    "presence",
 }
 
 
