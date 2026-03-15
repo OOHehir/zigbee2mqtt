@@ -13,6 +13,7 @@ data/*.db-shm
 # zigbee2mqtt runtime state (generated on first run)
 z2m-local/
 config/zigbee2mqtt/coordinator_backup.json
+config/zigbee2mqtt/configuration_backup_*.yaml
 config/zigbee2mqtt/database.db
 config/zigbee2mqtt/state.json
 config/zigbee2mqtt/migration-*.log

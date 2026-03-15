@@ -167,6 +167,88 @@ permit_join: false
 
 Then restart: `docker compose restart zigbee2mqtt`
 
+## RPi Docker Setup (from scratch)
+
+### 1. Install Docker on Raspberry Pi OS
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+```
+
+Log out and back in (or `newgrp docker`) for the group change to take effect.
+
+Verify:
+```bash
+docker --version
+docker compose version
+```
+
+### 2. Clone and configure
+
+```bash
+git clone <this-repo-url> ~/zigbee2mqtt
+cd ~/zigbee2mqtt
+```
+
+Plug in the SONOFF Zigbee 3.0 USB Dongle Plus V2. Confirm it appears:
+```bash
+ls /dev/ttyACM0
+```
+
+If the dongle shows up on a different path (e.g. `/dev/ttyUSB0`), update
+`docker-compose.yml` and `config/zigbee2mqtt/configuration.yaml` to match.
+
+### 3. Start the stack
+
+```bash
+docker compose up -d
+```
+
+This pulls and starts two containers:
+- **mosquitto** — MQTT broker on port 1883
+- **zigbee2mqtt** — Zigbee coordinator + web UI on port 8080
+
+Check they're running:
+```bash
+docker compose ps
+docker compose logs -f zigbee2mqtt   # Ctrl-C to stop tailing
+```
+
+### 4. Pair devices
+
+Open `http://<rpi-ip>:8080` in a browser. Permit join is enabled by default.
+Power on each sensor — it will appear in the Z2M UI once paired.
+
+### 5. Start the data collector
+
+```bash
+cd collector
+pip install -r requirements.txt
+python collector.py
+```
+
+### 6. Manage the stack
+
+```bash
+docker compose stop          # stop containers (keeps data)
+docker compose start         # restart stopped containers
+docker compose down          # stop and remove containers (volumes preserved)
+docker compose pull          # pull latest images
+docker compose up -d         # recreate with latest images
+docker compose logs -f       # tail all logs
+```
+
+### Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `permission denied` on docker socket | `sudo usermod -aG docker $USER` then log out/in |
+| `/dev/ttyACM0` not found | Check dongle is plugged in; try `ls /dev/ttyACM*` or `ls /dev/ttyUSB*` |
+| Z2M can't open serial port | Stop any other process using the port (`sudo fuser /dev/ttyACM0`); check `devices:` in `docker-compose.yml` |
+| Stale MQTT data after converter change | `docker compose down`, delete `config/zigbee2mqtt/database.db`, restart Mosquitto to clear retained messages, then `docker compose up -d` |
+| Containers restart-looping | `docker compose logs zigbee2mqtt` to check error; common cause is wrong serial port or adapter type |
+
 ## Hardware
 
 - **Coordinator:** SONOFF Zigbee 3.0 USB Dongle Plus V2 (EFR32MG21, `/dev/ttyACM0`)

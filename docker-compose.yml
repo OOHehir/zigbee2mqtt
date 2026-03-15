@@ -20,7 +20,7 @@ services:
       - "8080:8080"
     volumes:
       - ./config/zigbee2mqtt:/app/data
-      - ./converters:/app/data/converters:ro
+      - ./converters:/app/data/external_converters
       - /run/udev:/run/udev:ro
     devices:
       - /dev/ttyACM0:/dev/ttyACM0

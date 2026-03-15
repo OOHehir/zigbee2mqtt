@@ -9,7 +9,7 @@ const fz = {
             switch (msg.endpoint.ID) {
             case 1: return {presence: val > 0.5};
             case 2: return {range_cm: Math.round(val)};
-            case 4: return {static_energy: Math.round(val)};
+            case 3: return {static_energy: Math.round(val)};
             }
         },
     },
@@ -26,7 +26,7 @@ const definition = {
     endpoint: (device) => ({
         presence: 1,
         range_cm: 2,
-        static_energy: 4,
+        static_energy: 3,
     }),
     exposes: [
         {
@@ -58,7 +58,7 @@ const definition = {
         },
     ],
     configure: async (device, coordinatorEndpoint, logger) => {
-        for (const ep of [1, 2, 4]) {
+        for (const ep of [1, 2, 3]) {
             const endpoint = device.getEndpoint(ep);
             if (endpoint) {
                 await endpoint.bind('genAnalogInput', coordinatorEndpoint);
